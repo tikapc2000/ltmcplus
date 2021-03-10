@@ -17,8 +17,9 @@ class client{
         struct addrinfo *result = NULL,
                         *ptr = NULL,
                         hints;
-        string data="Hello World";
         int iResult;
+        char recvbuff[512];
+        string data;
     private:
         void intialize(){
             iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -54,17 +55,29 @@ class client{
                 break;
             }
             freeaddrinfo(result);
-            std::cout << "Connect Success";
             return *this;
         }
 
-        client sendData(const char* data){
-            iResult = send( ConnectSocket,data, sizeof(int), 0 );
-
+        client sendData(string data){
+            iResult = send( ConnectSocket,data.c_str(), data.length(), 0 );
             return *this;
         }
 
-        void shutdownConnection(){
+        client recive(){
+            do{
+                iResult = recv(ConnectSocket,recvbuff,512,0);
+            }while(iResult>0);
+            data = string(recvbuff);
+            return *this;
+        }
+
+        client get(string* data){
+            *data = this->data;
+            return *this;
+        }
+
+        client shutdownConnection(){
             iResult = shutdown(ConnectSocket, SD_SEND);
+            return* this;
         }
 };

@@ -22,7 +22,8 @@ class server{
         SOCKET ClientSocket = INVALID_SOCKET;
         struct addrinfo *result = NULL;
         struct addrinfo hints;
-        char recvbuff[255];
+        char recvbuff[512];
+        string data;
     private:
         void intialize(){
             iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -49,33 +50,44 @@ class server{
 
         server setupTCPListening(){
             iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-            freeaddrinfo(result);
             iResult = listen(ListenSocket, SOMAXCONN);
+            if (iResult == SOCKET_ERROR) {
+                printf("listen failed with error: %d\n", WSAGetLastError());
+                closesocket(ListenSocket);
+                WSACleanup();
+            }
             return *this;
         }
 
         server acceptClientSocket(){
             ClientSocket = accept(ListenSocket, NULL, NULL);
-            closesocket(ListenSocket);
-            std::cout << "Accept client successs" << std::endl;
             return *this;
         }
 
-        char* receive(){
-            do{
-                iResult = recv(ClientSocket,(char*)recvbuff,255,0);
-                if(iResult<0){
-                    printf("recv failed with error: %d\n", WSAGetLastError());
-                    closesocket(ClientSocket);
-                    WSACleanup();
-                }
-            }while(iResult>0);
-            return recvbuff;
+        server get(string* data){
+            *data = this->data;
+            return *this;
         }
 
-        void shutdownConnection(){
-            iResult = shutdown(ClientSocket, SD_SEND);
+        server receive(){
+            do{
+                iResult = recv(ClientSocket,recvbuff,512,0);
+            }while(iResult>0);
+            data = string(recvbuff);
+            return *this;
+        }
+
+        server sendData(string data){
+            send(ClientSocket,data.c_str(),data.length(),0);
+            return *this;
+        }
+
+        server shutdownConnection(){
+            freeaddrinfo(result);
+            closesocket(ListenSocket);
+            shutdown(ClientSocket, SD_SEND);
             closesocket(ClientSocket);
             WSACleanup();
+            return *this;
         }
 };
