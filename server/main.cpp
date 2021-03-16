@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 int countCharacter(string source,char search){
     int counter = 0;
     for(int i=0;i<source.size();i++)
@@ -38,9 +40,10 @@ int main(){
             .setupTCPListening()
             .acceptClientSocket()
             .receive()
+            .receive()
             .get(&s)
-            // .sendData("Co "+to_string(countCharacter(s,'A'))+ " ky tu A")
-            .sendData("Tong: "+to_string(sumOfString(s)))
+            .sendData("Co "+to_string(countCharacter(s,'A'))+ " ky tu A")
+            // .sendData("Tong: "+to_string(sumOfString(s)))
             .shutdownConnection();
     std::cout << s;
     getchar();

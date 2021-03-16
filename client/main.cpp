@@ -10,9 +10,10 @@ int main(){
     client().resolve()
             .attemp()
             .sendData(data)
-            .shutdownConnection()
-            .recive()
-            .get(&recv);
+            .sendData("Send Second")
+            .shutdownConnection();
+            // .recive()
+            // .get(&recv);
             
     std::cout << recv << std::endl;
     return 0;
