@@ -1,7 +1,7 @@
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
-#define DEFAULT_PORT "27015"
+#define DEFAULT_PORT "80"
 #define DEFAULT_BUFLEN 512
 
 #include <windows.h>
@@ -22,7 +22,7 @@ class server{
         SOCKET ClientSocket = INVALID_SOCKET;
         struct addrinfo *result = NULL;
         struct addrinfo hints;
-        char recvbuff[512];
+        char recvbuff[DEFAULT_BUFLEN];
         string data;
     private:
         void intialize(){
@@ -38,17 +38,17 @@ class server{
             intialize();
         }
 
-        server resolve(){
+        server* resolve(){
             iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-            return *this;
+            return this;
         }
 
-        server createSocket(){
+        server* createSocket(){
             ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-            return *this;
+            return this;
         }
 
-        server setupTCPListening(){
+        server* setupTCPListening(){
             iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
             iResult = listen(ListenSocket, SOMAXCONN);
             if (iResult == SOCKET_ERROR) {
@@ -56,39 +56,44 @@ class server{
                 closesocket(ListenSocket);
                 WSACleanup();
             }
-            return *this;
+            return this;
         }
 
-        server acceptClientSocket(){
+        server* acceptClientSocket(){
             ClientSocket = accept(ListenSocket, NULL, NULL);
-            return *this;
-        }
-
-        server get(string* data){
-            *data = this->data;
-            return *this;
-        }
-
-        server receive(){
-            iResult = 1;
-            do{
-                iResult = recv(ClientSocket,recvbuff,512,0);
-            }while(iResult>0);
-            data = string(recvbuff);
-            return *this;
-        }
-
-        server sendData(string data){
-            send(ClientSocket,data.c_str(),data.length(),0);
-            return *this;
-        }
-
-        server shutdownConnection(){
-            freeaddrinfo(result);
             closesocket(ListenSocket);
-            shutdown(ClientSocket, SD_SEND);
+            return this;
+        }
+
+        server* get(string* data){
+            *data = this->data;
+            return this;
+        }
+
+        server* receive(){
+            do{
+                //memset(recvbuff,0,DEFAULT_BUFLEN);
+                iResult = recv(ClientSocket,recvbuff,DEFAULT_BUFLEN,0);
+            }while(iResult>0);
+            
+            data = string(recvbuff);
+            return this;
+        }
+
+        server* sendData(string data){
+            send(ClientSocket,data.c_str(),data.length(),0);
+            return this;
+        }
+
+        server* shutdownConnection(){
+            iResult = shutdown(ClientSocket, SD_SEND);
+            if (iResult == SOCKET_ERROR) {
+                printf("shutdown failed with error: %d\n", WSAGetLastError());
+                closesocket(ClientSocket);
+                WSACleanup();
+            }
             closesocket(ClientSocket);
             WSACleanup();
-            return *this;
+            return this;
         }
 };

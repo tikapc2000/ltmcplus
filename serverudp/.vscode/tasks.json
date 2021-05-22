@@ -7,9 +7,10 @@
             "args": [
                 "-g",
                 "-std=c++11",
+                "-m32",
                 "${file}",
                 "-L",
-                "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.18362.0/um/x86",
+                "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.18362.0/um/x64",
                 "-l",
                 "Ws2_32",
                 "-o",

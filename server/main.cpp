@@ -2,18 +2,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
-int countCharacter(string source,char search){
-    int counter = 0;
-    for(int i=0;i<source.size();i++)
-        if(source[i]==search) counter++;
-    return counter;
-}
-
-std::vector<string> split(string source,string seperator){
-    std::vector<string> seperate;
+vector<string> split(string source,string seperator){
+    vector<string> seperate;
     while (source.find(seperator)!=string::npos)
     {
         seperate.push_back(source.substr(0,source.find(seperator)));
@@ -22,30 +16,40 @@ std::vector<string> split(string source,string seperator){
     seperate.push_back(source);
 
     return seperate;
-};
+}
 
-int sumOfString(string source){
-    std::vector<string> vct = split(source," ");
-    int sum = 0;
-    for(int i=0;i<vct.size();i++){
-        sum+=atoi(vct[i].c_str());
-    }
-    return sum;
+vector<int> convert_vector(vector<string> vct){
+    vector<int> arr;
+    for(int i=0;i<vct.size();i++)
+        arr.push_back(atoi(vct[i].c_str()));
+    return arr;
+}
+
+string to_string(vector<int> vct){
+    string str ="";
+    for(int i=0;i<vct.size();i++)
+        str+= to_string(vct[i])+" ";
+    return str;
 }
 
 int main(){
-    std::string s;
-    server().resolve()
-            .createSocket()
-            .setupTCPListening()
-            .acceptClientSocket()
-            .receive()
-            .receive()
-            .get(&s)
-            .sendData("Co "+to_string(countCharacter(s,'A'))+ " ky tu A")
-            // .sendData("Tong: "+to_string(sumOfString(s)))
-            .shutdownConnection();
-    std::cout << s;
-    getchar();
+    string recv_str;
+    server* serv = new server();
+    serv->resolve()
+        ->createSocket()
+        ->setupTCPListening()
+        ->acceptClientSocket()
+        ->receive()
+        ->get(&recv_str);
+    
+    cout << recv_str << endl;
+
+    vector<int> arr = convert_vector(split(recv_str," "));
+    sort(arr.begin(),arr.end());
+
+
+    serv->sendData("Day sau khi sap xep: "+to_string(arr))
+        ->shutdownConnection();
+
     return 0;
 }

@@ -6,7 +6,8 @@
 #include <iostream>
 #include <string>
 
-#define DEFAULT_PORT "27015"
+#define DEFAULT_PORT "80"
+#define DEFAULT_BUFLEN 512
 
 using namespace std;
 
@@ -18,7 +19,7 @@ class client{
                         *ptr = NULL,
                         hints;
         int iResult;
-        char recvbuff[512];
+        char recvbuff[DEFAULT_BUFLEN];
         string data;
     private:
         void intialize(){
@@ -33,12 +34,12 @@ class client{
             intialize();
         }
 
-        client resolve(){
+        client* resolve(){
             iResult = getaddrinfo("localhost", DEFAULT_PORT, &hints, &result);
-            return *this;
+            return this;
         }
 
-        client attemp(){
+        client* attemp(){
             for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {
 
                 // Create a SOCKET for connecting to server
@@ -55,29 +56,29 @@ class client{
                 break;
             }
             freeaddrinfo(result);
-            return *this;
+            return this;
         }
 
-        client sendData(string data){
+        client* sendData(string data){
             iResult = send( ConnectSocket,data.c_str(), data.length(), 0 );
-            return *this;
+            return this;
         }
 
-        client recive(){
+        client* recive(){
             do{
-                iResult = recv(ConnectSocket,recvbuff,512,0);
+                iResult = recv(ConnectSocket,recvbuff,DEFAULT_BUFLEN,0);
             }while(iResult>0);
             data = string(recvbuff);
-            return *this;
+            return this;
         }
 
-        client get(string* data){
+        client* get(string* data){
             *data = this->data;
-            return *this;
+            return this;
         }
 
-        client shutdownConnection(){
+        client* shutdownConnection(){
             iResult = shutdown(ConnectSocket, SD_SEND);
-            return* this;
+            return this;
         }
 };
